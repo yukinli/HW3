@@ -27,6 +27,7 @@ view(test)
 
 #2
 view(train$Survived)
+as.factor(train$Survived)
 summary(train$Survived)
 sum(train$Survived == "1")
 sum(train$Survived =="0")
@@ -38,10 +39,11 @@ cor_Titanic <- train %>%
   correlate()
 rplot(cor_Titanic)
 
-# I think Pclass and Fare are correlated.
+# I think Parch and SibSp are correlated.
 
 #4
-titanic_recipe <- recipe(Survived ~ ., data = train) %>% 
+step_impute_linear(train$age)
+titanic_recipe <- recipe(Survived ~  Pclass + Age + SibSp + Parch + Fare, data = train) %>% 
   step_dummy(all_nominal_predictors())
 
 
@@ -121,13 +123,13 @@ results <- tibble(accuracies = accuracies, models = models)
 results %>% 
   arrange(-accuracies)
 
-# the Naive Bayes mode is better
+# the log_fit is better
 
 #10
-predict(nb_fit, new_data = test, type = "prob")
-augment(nb_fit, new_data = test) %>%
+predict(log_fit, new_data = test, type = "prob")
+augment(log_fit, new_data = test) %>%
   conf_mat(truth = Survived, estimate = .pred_class) 
-augment(nb_fit, new_data = test) %>%
+augment(log_fit, new_data = test) %>%
   roc_curve(Survived, .pred_Down) %>%
   autoplot()
 
